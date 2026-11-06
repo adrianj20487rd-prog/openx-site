@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>openX — the open Windows host for script execution</title>
+<meta name="description" content="openX is a focused Windows x64 desktop host for the Capi / Xeno.dll executor API. Document tabs, a Scintilla editor with Lua highlighting, autoexec, multi-client targeting, and a launcher that installs .NET for you.">
+<meta name="theme-color" content="#0a0c10">
+<meta property="og:title" content="openX">
+<meta property="og:description" content="A focused desktop host for the Capi / Xeno.dll executor API.">
+<meta property="og:image" content="assets/ui-editor.png">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 1.6 21 6.8v10.4L12 22.4 3 17.2V6.8z" stroke="#80deea" stroke-width="1.5"/>
+        <path d="M8.4 8.6l7.2 6.8M15.6 8.6l-7.2 6.8" stroke="#80deea" stroke-width="1.9" stroke-linecap="round"/>
+      </svg>
+      openX <span class="v">v1.0</span>
+    </a>
+    <div class="nav-links">
+      <a href="#overview">Overview</a>
+      <a href="#ui">Interface</a>
+      <a href="#runtime">Runtime</a>
+      <a href="docs.html">Docs</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <a class="btn btn-primary btn-sm" href="#download">Download</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow"><span class="dot"></span>Windows x64 · .NET installs itself</span>
+    <h1 class="wordmark">open<span class="x">X</span></h1>
+    <p class="lede">
+      A focused desktop host for the <strong>Capi / Xeno.dll</strong> executor API.
+      One window, document tabs that behave like a real editor, and a launcher
+      that sets up the runtime for you.
+    </p>
+    <div class="hero-cta">
+      <a class="btn btn-primary" href="#download">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m6 11 6 6 6-6"/><path d="M4 21h16"/></svg>
+        Download for Windows
+      </a>
+      <a class="btn btn-ghost" href="#ui">See the interface</a>
+    </div>
+    <p class="hero-note">no installer · no telemetry · no bundled core · 4.3 MB</p>
+
+    <div class="stats">
+      <div class="stat"><div class="n"><span>0</span> calls</div><div class="l">network at runtime</div></div>
+      <div class="stat"><div class="n"><span>5</span> exports</div><div class="l">core ABI bridged</div></div>
+      <div class="stat"><div class="n"><span>1</span> click</div><div class="l">.NET bootstrap</div></div>
+      <div class="stat"><div class="n"><span>∞</span> tabs</div><div class="l">documents, not modes</div></div>
+    </div>
+  </div>
+</header>
+
+<section id="overview">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="kicker">Overview</div>
+      <h2>The wrapper, rebuilt around what actually works.</h2>
+      <p>
+        The published Capi package is a 360-line P/Invoke layer whose every download and
+        update endpoint now returns 404. openX keeps the ABI, deletes the dead paths, and
+        puts a real interface on top of it.
+      </p>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m8 6-5 6 5 6"/><path d="m16 6 5 6-5 6"/></svg></div>
+        <h3>Scintilla editor</h3>
+        <p>Lua lexer, line numbers, a dark palette that doesn't fight the rest of the window. Tabs sit on top: a dot marks unsaved work, F2 renames, Ctrl+W closes.</p>
+      </div>
+      <div class="card">
+        <div class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg></div>
+        <h3>Multi-client targeting</h3>
+        <p><code class="inline">GetClients</code> feeds a live dropdown. Send to every attached client at once, or pick one by name.</p>
+      </div>
+      <div class="card">
+        <div class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 17l6-6-6-6"/><path d="M12 19h8"/></svg></div>
+        <h3>Docked console</h3>
+        <p>Timestamps, color-coded info / ok / warn / error, and a scrollback you can actually read in a dark room. Dock it under the editor or collapse it.</p>
+      </div>
+      <div class="card">
+        <div class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="4"/></svg></div>
+        <h3>Auto-attach + autoexec</h3>
+        <p>Polls for clients and attaches when the core is ready. Runs <code class="inline">setup.lua</code>, then every <code class="inline">autoexec/</code> script, once per client.</p>
+      </div>
+      <div class="card">
+        <div class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg></div>
+        <h3>Core integrity</h3>
+        <p>Every load prints the SHA-256 of the DLL it mapped. If the hash changes, you'll see it in the console before a script runs.</p>
+      </div>
+      <div class="card">
+        <div class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7h7l2 2h9"/><path d="M3 17h18"/></svg></div>
+        <h3>Portable layout</h3>
+        <p>One folder: exe, DLLs, <code class="inline">scripts/</code>, <code class="inline">autoexec/</code>, and a <code class="inline">config.ini</code> written on exit. No registry, no install directory.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="ui">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="kicker">Interface</div>
+      <h2>One window. Documents on top.</h2>
+      <p>Tabs are files, not fixed modes — open as many as you want. Rendered from the real WinForms layout: same sizes, same palette, same dock order.</p>
+    </div>
+
+    <div class="shot-frame">
+      <div class="shot-bar">
+        <span class="dots"><i></i><i></i><i></i></span>
+        openX.host.exe
+        <span class="path">1180 × 780</span>
+      </div>
+      <img src="assets/ui-editor.png" width="2360" height="1560" alt="openX window with document tabs on top, a syntax-highlighted hello.lua, the scripts and autoexec list, the client dropdown and the docked console">
+    </div>
+
+    <div class="gallery two">
+      <figure>
+        <div class="shot-frame">
+          <div class="shot-bar"><span class="dots"><i></i><i></i><i></i></span>Console<span class="path">docked pane</span></div>
+          <img src="assets/ui-console.png" width="2360" height="1560" alt="openX docked console with timestamped, color-coded log lines over the editor" loading="lazy">
+        </div>
+        <figcaption><b>Console</b> — docked under the editor. Load, attach, setup, autoexec and execute events, color-coded by level.</figcaption>
+      </figure>
+      <figure>
+        <div class="shot-frame">
+          <div class="shot-bar"><span class="dots"><i></i><i></i><i></i></span>setup.lua<span class="path">document tab</span></div>
+          <img src="assets/ui-setup.png" width="2360" height="1560" alt="setup.lua open as a normal document tab in the openX editor, with the console collapsed" loading="lazy">
+        </div>
+        <figcaption><b>setup.lua</b> — an ordinary document: editable, saveable, and run once per client before your script.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section id="runtime">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="kicker">Runtime</div>
+      <h2>.NET installs itself on first launch.</h2>
+      <p>
+        <code class="inline">openX.exe</code> is a ~46 KB native Win32 launcher. It needs nothing
+        installed, which is exactly why it can install what the app needs.
+      </p>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <h3>Check</h3>
+        <p>Reads <code class="inline">NDP\v4\Full\Release</code> from the registry, 64-bit view.</p>
+      </div>
+      <div class="step">
+        <h3>Run</h3>
+        <p>At 461808 or higher — .NET Framework 4.7.2 — it starts the host immediately, no prompt.</p>
+      </div>
+      <div class="step">
+        <h3>Fetch</h3>
+        <p>If missing, it asks once, then pulls Microsoft's official offline installer over HTTPS.</p>
+      </div>
+      <div class="step">
+        <h3>Install</h3>
+        <p>Runs it quietly, handles the reboot-required codes, re-checks, then launches.</p>
+      </div>
+    </div>
+
+    <div class="honest" style="margin-top:34px">
+      <div><span class="y">✓</span><span><b>Asked first</b>Nothing downloads unless the framework is genuinely absent.</span></div>
+      <div><span class="y">✓</span><span><b>Official source</b>The installer comes from Microsoft's own <code class="inline">go.microsoft.com</code> link, not a mirror.</span></div>
+      <div><span class="y">✓</span><span><b>Skips itself</b>Windows 10 1809+ and Windows 11 already ship 4.8, so the launcher is invisible.</span></div>
+      <div><span class="y">✓</span><span><b>No leftovers</b>The downloaded installer is deleted after it runs.</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="honest">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="kicker">Scope</div>
+      <h2>What openX does, and what it doesn't.</h2>
+      <p>Executors are a scene full of promises. Here's the actual list.</p>
+    </div>
+
+    <div class="honest">
+      <div><span class="y">✓</span><span><b>Runs scripts you write</b>through whatever core you load.</span></div>
+      <div><span class="n">✕</span><span><b>Doesn't ship a core</b><code class="inline">Xeno.dll</code> is closed source and not distributable here.</span></div>
+      <div><span class="y">✓</span><span><b>Bridges the five exports</b>Initialize, Attach, GetClients, Execute, Compilable.</span></div>
+      <div><span class="n">✕</span><span><b>Doesn't phone home</b>no update check, no broadcast channel, no remote setup fetch.</span></div>
+      <div><span class="y">✓</span><span><b>Shows what it loaded</b>path, SHA-256, and every failure in plain text.</span></div>
+      <div><span class="n">✕</span><span><b>Doesn't promise safety</b>no "undetected" claim, and no bypass of anything.</span></div>
+    </div>
+
+    <div class="note" style="margin-top:28px">
+      <b>Reality check.</b> Executing scripts in Roblox violates the platform's terms and can get
+      accounts banned. openX is a host for a third-party DLL — it can't change what that DLL does
+      or whether Roblox's client currently tolerates it.
+    </div>
+  </div>
+</section>
+
+<section id="download">
+  <div class="wrap">
+    <div class="cta">
+      <h2>Get openX</h2>
+      <p>Requires Windows 10/11 x64 and a <code class="inline">Xeno.dll</code> build you trust. The launcher handles .NET.</p>
+      <div class="hero-cta" style="margin-top:0">
+        <a class="btn btn-primary" href="download/openX-1.0-win64.zip">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m6 11 6 6 6-6"/><path d="M4 21h16"/></svg>
+          Download .zip
+        </a>
+        <a class="btn btn-ghost" href="docs.html">Read the docs</a>
+      </div>
+      <p style="margin:18px auto 0;font-family:var(--mono);font-size:11.5px;color:var(--dim)">
+        openX-1.0-win64.zip · 4.3 MB · no core included ·
+        <a href="download/SHA256SUMS" style="color:inherit">SHA-256</a>
+      </p>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="kicker">FAQ</div>
+      <h2>Questions worth asking.</h2>
+    </div>
+
+    <div class="faq">
+      <details open>
+        <summary>Do I need to install .NET myself?</summary>
+        <div class="body">
+          No. Run <code class="inline">openX.exe</code>. It checks for .NET Framework 4.7.2 and,
+          if it's missing, asks once before downloading Microsoft's offline installer. Windows 10
+          1809+ and Windows 11 already include 4.8, so most machines never see the prompt.
+        </div>
+      </details>
+      <details>
+        <summary>Does it include the executor core?</summary>
+        <div class="body">
+          No. <code class="inline">Xeno.dll</code> is closed source, and every URL the original
+          package used for it returns 404. Drop a build you trust next to
+          <code class="inline">openX.host.exe</code>, or click the core chip in the sidebar to
+          locate it. It is saved as <code class="inline">CorePath</code> in
+          <code class="inline">config.ini</code>.
+        </div>
+      </details>
+      <details>
+        <summary>Can I keep several scripts open?</summary>
+        <div class="body">
+          Yes — every file opens in its own tab above the editor. Double-click a tab, or press
+          <code class="inline">F2</code>, to rename it; the file on disk is renamed too.
+          <code class="inline">Ctrl+S</code> saves, <code class="inline">Ctrl+Shift+S</code> saves
+          a copy, <code class="inline">Ctrl+W</code> closes, and <code class="inline">Ctrl+Tab</code>
+          cycles. A dot on the tab means unsaved changes; right-click a tab to jump to any
+          document in the list.
+        </div>
+      </details>
+      <details>
+        <summary>What is autoexec/ for?</summary>
+        <div class="body">
+          Drop <code class="inline">.lua</code> files in the <code class="inline">autoexec</code>
+          folder next to the exe. After injection, openX runs <code class="inline">setup.lua</code>
+          once, then every autoexec script in filename order, once per client. You can turn it off
+          with the checkbox in the sidebar.
+        </div>
+      </details>
+      <details>
+        <summary>Does loadstring work?</summary>
+        <div class="body">
+          That's decided by the core, not by openX. The host never adds or removes Lua functions —
+          it hands your source to <code class="inline">Execute()</code>. Check with
+          <code class="inline">print(type(loadstring))</code>. If it returns
+          <code class="inline">nil</code>, the DLL didn't expose it and nothing outside the DLL can
+          put it back.
+        </div>
+      </details>
+      <details>
+        <summary>Is it undetected?</summary>
+        <div class="body">
+          There's no such guarantee to make. Detection depends on the core, the Roblox build, and
+          whatever the anti-cheat is doing that week. openX makes no claim either way, and using
+          it can get an account banned.
+        </div>
+      </details>
+      <details>
+        <summary>Does it run on macOS or ARM Windows?</summary>
+        <div class="body">
+          Not natively. The core and the Roblox client it targets are Windows x64. Under Parallels
+          or UTM with Windows 11 ARM, the host itself may start, but a native x64 injector is a
+          different story — test before relying on it.
+        </div>
+      </details>
+      <details>
+        <summary>What's in the download?</summary>
+        <div class="body">
+          The launcher, the host, MaterialSkin and ScintillaNET, the Scintilla lexer DLLs, the
+          local <code class="inline">scripts/setup.lua</code>, and an empty
+          <code class="inline">autoexec/</code> folder with a README. No core, no installer, no
+          registry writes.
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div>
+        <a class="brand" href="index.html" style="margin-bottom:14px">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 1.6 21 6.8v10.4L12 22.4 3 17.2V6.8z" stroke="#80deea" stroke-width="1.5"/>
+            <path d="M8.4 8.6l7.2 6.8M15.6 8.6l-7.2 6.8" stroke="#80deea" stroke-width="1.9" stroke-linecap="round"/>
+          </svg>
+          openX <span class="v">v1.0</span>
+        </a>
+        <p class="about">A Windows host for the Capi / Xeno.dll executor API. Built around the parts of the wrapper that still work.</p>
+      </div>
+      <div>
+        <h4>Product</h4>
+        <a href="#overview">Overview</a>
+        <a href="#ui">Interface</a>
+        <a href="#runtime">Runtime</a>
+        <a href="#download">Download</a>
+      </div>
+      <div>
+        <h4>Resources</h4>
+        <a href="docs.html">Documentation</a>
+        <a href="docs.html#troubleshooting">Troubleshooting</a>
+        <a href="docs.html#build">Building</a>
+        <a href="docs.html#audit">Audit notes</a>
+      </div>
+      <div>
+        <h4>Credits</h4>
+        <a href="https://github.com/spartanrecordzz22/Capi">CXAPI by @volxphy</a>
+        <a href="https://github.com/leocb/MaterialSkin">MaterialSkin.2</a>
+        <a href="https://github.com/jacobslusser/ScintillaNET">ScintillaNET</a>
+      </div>
+    </div>
+    <div class="legal">
+      <span>© 2026 openX. MaterialSkin.2 (MIT) and ScintillaNET are third-party components.</span>
+      <span>Not affiliated with Roblox or Xeno. Use of executors violates Roblox's Terms of Service.</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

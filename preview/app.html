@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>openX — UI preview</title>
+<style>
+  /* Mirrors src/openX/UI/MainForm.cs so the site previews match the app. */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #0b0d10; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; }
+  #app {
+    width: 1180px; height: 780px; position: relative; overflow: hidden;
+    background: #18181c; color: #e9ebee;
+  }
+
+  /* material title bar */
+  .actionbar {
+    height: 64px; background: #263238; display: flex; align-items: center;
+    padding: 0 22px; border-bottom: 1px solid rgba(128,222,234,.10);
+  }
+  .actionbar .mark { width: 21px; height: 21px; margin-right: 12px; }
+  .actionbar .name { font-size: 15px; font-weight: 600; letter-spacing: .3px; color: #fff; }
+  .actionbar .doc { color: #8fa0a6; font-size: 12.5px; margin-left: 9px; }
+
+  .body { height: 716px; display: flex; }
+
+  /* ---------------- sidebar ---------------- */
+  .sidebar { width: 268px; background: #151519; padding: 6px 12px 10px 14px;
+             display: flex; flex-direction: column; }
+  .wordmark { font-size: 26px; font-weight: 700; letter-spacing: -.6px; color: #eef0f2; }
+  .sub { font-size: 9.5px; color: #848a91; margin-top: 1px; }
+  .label { font-size: 9px; font-weight: 700; letter-spacing: 1.3px; color: #848a91; }
+  .client { margin-top: 14px; }
+  .combo { margin-top: 5px; height: 27px; background: #24242a; border: 1px solid #32323a;
+           border-radius: 2px; display: flex; align-items: center; justify-content: space-between;
+           padding: 0 9px; font-size: 11px; color: #dfe2e5; }
+  .combo .caret { color: #80deea; font-size: 8px; }
+  .row { display: flex; gap: 8px; margin-top: 8px; }
+  .btn { height: 29px; border-radius: 2px; display: flex; align-items: center; justify-content: center;
+         font-size: 10.5px; font-weight: 600; letter-spacing: .3px; white-space: nowrap; }
+  .btn.attach { flex: 1; background: #264248; color: #80deea; }
+  .btn.detach { flex: 1; border: 1px solid #2b2b32; color: #b2b7bc; }
+  .check { display: flex; align-items: center; gap: 7px; font-size: 10.5px; color: #b2b7bc; margin-top: 9px; }
+  .box { width: 13px; height: 13px; border-radius: 1px; border: 1.4px solid #80deea;
+         display: flex; align-items: center; justify-content: center; flex: none; }
+  .box.on { background: #80deea; }
+  .box i { color: #10232a; font-size: 9px; font-style: normal; font-weight: 900; }
+
+  .scripts { margin-top: 15px; flex: 1; display: flex; flex-direction: column; min-height: 0; }
+  .scripts .head { display: flex; justify-content: space-between; align-items: center; height: 17px; }
+  .scripts .head span { font-size: 9px; color: #848a91; }
+  .list { margin-top: 4px; overflow: hidden; flex: 1; }
+  .group { font-size: 8.5px; font-weight: 700; letter-spacing: 1.1px; color: #848a91;
+           padding: 9px 4px 4px; }
+  .file { height: 26px; display: flex; align-items: center; justify-content: space-between;
+          padding: 0 9px 0 12px; font-size: 11.5px; color: #ced2d6; border-radius: 2px; }
+  .file .tag { font-size: 8.5px; color: #686e74; }
+  .file.sel { background: #283238; color: #fff; box-shadow: inset 2px 0 0 #80deea; }
+  .file.sel .tag { color: #80deea; }
+
+  .options { margin-top: 8px; }
+  .options .check { margin-top: 5px; }
+  .autoexec-count { margin-top: 7px; font-size: 9px; color: #848a91; }
+
+  .corechip { margin-top: 10px; height: 50px; background: #1d1d23; border-radius: 3px;
+              padding: 8px 10px 0 10px; position: relative; }
+  .corechip .dot { position: absolute; left: 10px; top: 8px; color: #7ecc7e; font-size: 10px; }
+  .corechip .ct { position: absolute; left: 26px; top: 7px; font-size: 8.5px; font-weight: 700;
+                  letter-spacing: 1.1px; color: #848a91; }
+  .corechip .cv { position: absolute; left: 26px; top: 22px; font-size: 10px; color: #96c4b2; }
+  .corechip .chev { position: absolute; right: 9px; top: 12px; color: #686e74; font-size: 15px; }
+
+  /* ---------------- workspace ---------------- */
+  .workspace { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .tabrow { height: 40px; background: #1b1b20; border-bottom: 1px solid #2b2b32;
+            display: flex; align-items: flex-start; }
+  .tabs { display: flex; padding: 6px 0 0 8px; flex: 1; overflow: hidden; }
+  .tab { height: 27px; display: flex; align-items: center; gap: 10px; padding: 0 9px 0 11px;
+         margin-right: 3px; background: #1e1e23; color: #9ca2a8; font-size: 11.5px;
+         border-radius: 2px 2px 0 0; position: relative; flex: none; }
+  .tab .x { color: #737980; font-size: 12px; }
+  .tab.on { background: #292930; color: #eef0f2; font-weight: 600;
+            box-shadow: inset 0 -2px 0 #80deea; }
+  .tab .dirty { color: #80deea; }
+  .tab.add { background: transparent; color: #737980; font-size: 15px; padding: 0 8px; }
+  .status { width: 236px; text-align: right; padding: 0 12px 0 0; line-height: 40px;
+            font-size: 10px; color: #848a91; flex: none; }
+
+  .split { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+  .editor { flex: 1; background: #17171b; display: flex; overflow: hidden; min-height: 0; }
+  .gutter { width: 46px; background: #17171b; color: #6c6c74; text-align: right;
+            padding: 13px 9px 0 0; font-family: "SF Mono", Consolas, monospace;
+            font-size: 12.5px; line-height: 21px; user-select: none; flex: none;
+            border-right: 1px solid rgba(255,255,255,.04); }
+  .code { flex: 1; padding: 13px 22px; font-family: "SF Mono", Consolas, monospace;
+          font-size: 12.5px; line-height: 21px; white-space: pre; color: #dcdcdc; overflow: hidden; }
+  .cm { color: #6a9955; } .kw { color: #569cd6; } .st { color: #ce9178; }
+  .nu { color: #b5cea8; } .fn { color: #dcdcaa; } .op { color: #d4d4d4; }
+
+  .splitter { height: 5px; background: #18181c; flex: none; }
+
+  .consolepane { height: 203px; background: #121216; flex: none; display: flex;
+                 flex-direction: column; }
+  .conhead { height: 27px; background: #1a1a1f; display: flex; align-items: center; flex: none; }
+  .conhead .ct { font-size: 9px; font-weight: 700; letter-spacing: 1.2px; color: #848a91;
+                 padding-left: 12px; flex: 1; }
+  .conhead .act { font-size: 9px; color: #848a91; padding: 0 12px; }
+  .console { flex: 1; padding: 9px 18px; overflow: hidden;
+             font-family: "SF Mono", Consolas, monospace; font-size: 11.5px; line-height: 19px;
+             color: #d2d2d2; }
+  .console .t { color: #767c82; }
+  .ok { color: #7ecc7e; } .warn { color: #e6be6e; } .err { color: #f07878; }
+  .info { color: #c8c8c8; } .scr { color: #96b4e6; }
+
+  .actionbar2 { height: 64px; background: #16161a; display: flex; align-items: center;
+                padding: 0 14px; flex: none; gap: 10px; }
+  .execute { width: 148px; height: 42px; background: #80deea; color: #0d1b1f; border-radius: 2px;
+             display: flex; align-items: center; justify-content: center;
+             font-size: 11.5px; font-weight: 800; letter-spacing: .8px; }
+  .syntax { width: 126px; height: 42px; border: 1px solid #2b2b32; border-radius: 2px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10.5px; color: #b2b7bc; }
+  .hint { flex: 1; font-size: 9.5px; color: #848a91; padding-left: 4px; }
+  .console-toggle { width: 112px; height: 38px; border: 1px solid #2b2b32; border-radius: 2px;
+                    display: flex; align-items: center; justify-content: center;
+                    font-size: 10px; color: #848a91; }
+
+  /* view variants */
+  body[data-view="console"] .consolepane { height: 392px; }
+  body[data-view="console"] .console { font-size: 11.5px; line-height: 20px; }
+  body[data-view="setup"] .consolepane { display: none; }
+  body[data-view="setup"] .splitter { display: none; }
+</style>
+</head>
+<body data-view="editor">
+<div id="app">
+  <div class="actionbar">
+    <svg class="mark" viewBox="0 0 24 24" fill="none">
+      <path d="M12 1.6 21 6.8v10.4L12 22.4 3 17.2V6.8z" stroke="#80deea" stroke-width="1.5"/>
+      <path d="M8.4 8.6l7.2 6.8M15.6 8.6l-7.2 6.8" stroke="#80deea" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>
+    <span class="name">openX</span>
+    <span class="doc">— hello.lua</span>
+  </div>
+
+  <div class="body">
+    <aside class="sidebar">
+      <div class="wordmark">openX</div>
+      <div class="sub">windows x64 · v1.0</div>
+
+      <div class="client">
+        <div class="label">CLIENT</div>
+        <div class="combo"><span>RobloxPlayerBeta.exe (1.2.3.4)</span><span class="caret">▼</span></div>
+        <div class="row">
+          <div class="btn attach">Attach</div>
+          <div class="btn detach">Detach</div>
+        </div>
+        <div class="check"><span class="box on"><i>✓</i></span>auto-inject</div>
+      </div>
+
+      <div class="scripts">
+        <div class="head"><span class="label">SCRIPTS</span><span>refresh</span></div>
+        <div class="list">
+          <div class="group">SCRIPTS</div>
+          <div class="file sel">hello.lua<span class="tag">lua</span></div>
+          <div class="file">esp.lua<span class="tag">lua</span></div>
+          <div class="file">farm.lua<span class="tag">lua</span></div>
+          <div class="file">teleport.lua<span class="tag">lua</span></div>
+          <div class="file">setup.lua<span class="tag">lua</span></div>
+          <div class="group">AUTOEXEC</div>
+          <div class="file">autoload.lua<span class="tag">auto</span></div>
+          <div class="file">README.txt<span class="tag">txt</span></div>
+        </div>
+      </div>
+
+      <div class="options">
+        <div class="check"><span class="box on"><i>✓</i></span>run setup.lua once per client</div>
+        <div class="check"><span class="box on"><i>✓</i></span>run autoexec/ after inject</div>
+        <div class="autoexec-count">autoexec/ · 1 script</div>
+      </div>
+
+      <div class="corechip">
+        <span class="dot">●</span>
+        <span class="ct">CORE · ATTACHED</span>
+        <span class="cv">Xeno.dll &nbsp;·&nbsp; 9f2c41d7b8</span>
+        <span class="chev">›</span>
+      </div>
+    </aside>
+
+    <main class="workspace">
+      <div class="tabrow">
+        <div class="tabs">
+          <div class="tab on">hello.lua<span class="x">×</span></div>
+          <div class="tab">esp.lua<span class="x">×</span></div>
+          <div class="tab">untitled.lua <span class="dirty">•</span><span class="x">×</span></div>
+          <div class="tab add">+</div>
+        </div>
+        <div class="status">attached &nbsp;·&nbsp; 1 client</div>
+      </div>
+
+      <div class="split">
+        <div class="editor">
+          <div class="gutter">1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13</div>
+          <div class="code" data-doc="hello"><span class="cm">-- hello.lua</span>
+<span class="kw">local</span> Players = game:<span class="fn">GetService</span>(<span class="st">"Players"</span>)
+<span class="kw">local</span> me = Players.LocalPlayer
+
+<span class="fn">print</span>(<span class="st">"hello from openX"</span>)
+<span class="fn">print</span>(<span class="st">"local player:"</span>, me <span class="kw">and</span> me.Name <span class="kw">or</span> <span class="st">"unknown"</span>)
+
+<span class="kw">for</span> _, player <span class="kw">in</span> <span class="fn">ipairs</span>(Players:<span class="fn">GetPlayers</span>()) <span class="kw">do</span>
+    <span class="fn">print</span>(player.Name, player.UserId)
+<span class="kw">end</span>
+
+<span class="cm">-- F5 runs this script. Ctrl+S saves it.</span>
+<span class="cm">-- Tabs on top are open documents: F2 renames.</span>
+</div>
+        </div>
+
+        <div class="splitter"></div>
+
+        <div class="consolepane">
+          <div class="conhead"><span class="ct">CONSOLE</span><span class="act">clear</span><span class="act">hide</span></div>
+          <div class="console" data-doc="hello"><span class="t">[18:42:01]</span> <span class="info">openX started. core path: Xeno.dll</span>
+<span class="t">[18:42:01]</span> <span class="ok">core loaded: C:\openX\Xeno.dll</span>
+<span class="t">[18:42:01]</span> <span class="info">core sha256: 9f2c41d7b8e0a6d3…</span>
+<span class="t">[18:42:02]</span> <span class="info">scripts: 5 file(s) in scripts/</span>
+<span class="t">[18:42:05]</span> <span class="ok">attached</span>
+<span class="t">[18:42:05]</span> <span class="info">setup.lua ran on 1 client(s)</span>
+<span class="t">[18:42:06]</span> <span class="scr">autoexec: autoload.lua</span>
+<span class="t">[18:42:09]</span> <span class="ok">executed on 1 client(s)</span>
+</div>
+        </div>
+      </div>
+
+      <div class="actionbar2">
+        <div class="execute">EXECUTE (F5)</div>
+        <div class="syntax">Check syntax</div>
+        <div class="hint">F5 run &nbsp;&nbsp; Ctrl+S save &nbsp;&nbsp; Ctrl+Shift+S save as &nbsp;&nbsp; F2 rename &nbsp;&nbsp; Ctrl+W close</div>
+        <div class="console-toggle">Hide console</div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+  var view = new URLSearchParams(location.search).get("v") || "editor";
+  document.body.dataset.view = view;
+
+  if (view === "console") {
+    document.querySelector(".status").textContent = "attached · 1 client";
+    document.querySelector(".actionbar .doc").textContent = "— esp.lua";
+    document.querySelectorAll(".tab").forEach(function (t, i) {
+      t.classList.toggle("on", i === 1);
+    });
+    document.querySelectorAll(".file").forEach(function (f) {
+      f.classList.toggle("sel", f.textContent.indexOf("esp.lua") === 0);
+    });
+    document.querySelector(".code").innerHTML =
+      '<span class="cm">-- esp.lua</span>\n' +
+      '<span class="kw">local</span> Players = game:<span class="fn">GetService</span>(<span class="st">"Players"</span>)\n' +
+      '<span class="kw">local</span> Camera = workspace.CurrentCamera\n\n' +
+      '<span class="kw">local</span> boxes = {}\n\n' +
+      '<span class="kw">local function</span> <span class="fn">draw</span>(player)\n' +
+      '    <span class="kw">if</span> <span class="kw">not</span> player.Character <span class="kw">then</span> <span class="kw">return</span> <span class="kw">end</span>\n' +
+      '    <span class="kw">local</span> root = player.Character:<span class="fn">FindFirstChild</span>(<span class="st">"HumanoidRootPart"</span>)\n' +
+      '    <span class="kw">if</span> root <span class="kw">then</span> boxes[player] = root <span class="kw">end</span>\n' +
+      '<span class="kw">end</span>\n\n' +
+      'Players.PlayerAdded:<span class="fn">Connect</span>(draw)\n' +
+      '<span class="fn">print</span>(<span class="st">"esp loaded on"</span>, #Players:<span class="fn">GetPlayers</span>(), <span class="st">"players"</span>)';
+
+    document.querySelector(".console").innerHTML =
+      '<span class="t">[18:42:01]</span> <span class="info">openX started. core path: Xeno.dll</span>\n' +
+      '<span class="t">[18:42:01]</span> <span class="ok">core loaded: C:\\openX\\Xeno.dll</span>\n' +
+      '<span class="t">[18:42:01]</span> <span class="info">core sha256: 9f2c41d7b8e0a6d3…</span>\n' +
+      '<span class="t">[18:42:02]</span> <span class="info">scripts: 5 file(s) in scripts/</span>\n' +
+      '<span class="t">[18:42:05]</span> <span class="ok">attached</span>\n' +
+      '<span class="t">[18:42:05]</span> <span class="info">setup.lua ran on 1 client(s)</span>\n' +
+      '<span class="t">[18:42:06]</span> <span class="scr">autoexec: autoload.lua</span>\n' +
+      '<span class="t">[18:42:06]</span> <span class="ok">autoexec ran on 1 client(s)</span>\n' +
+      '<span class="t">[18:42:09]</span> <span class="ok">executed on 1 client(s)</span>\n' +
+      '<span class="t">[18:42:14]</span> <span class="warn">no clients - is Roblox running?</span>\n' +
+      '<span class="t">[18:42:19]</span> <span class="ok">auto-attached</span>\n' +
+      '<span class="t">[18:42:19]</span> <span class="info">setup.lua ran on 1 client(s)</span>\n' +
+      '<span class="t">[18:42:22]</span> <span class="ok">executed on 1 client(s)</span>\n' +
+      '<span class="t">[18:42:31]</span> <span class="ok">compile: ok</span>\n' +
+      '<span class="t">[18:42:36]</span> <span class="ok">executed on 1 client(s)</span>';
+  }
+
+  if (view === "setup") {
+    document.querySelector(".actionbar .doc").textContent = "— setup.lua";
+    document.querySelectorAll(".tab").forEach(function (t, i) {
+      t.classList.toggle("on", i === 2);
+      if (i === 2) t.innerHTML = 'setup.lua<span class="x">×</span>';
+    });
+    document.querySelector(".console-toggle").textContent = "Show console";
+    document.querySelectorAll(".file").forEach(function (f) {
+      f.classList.toggle("sel", f.textContent.indexOf("setup.lua") === 0);
+    });
+    document.querySelector(".code").innerHTML =
+      '<span class="cm">-- scripts/setup.lua · runs once per client before your script</span>\n' +
+      '<span class="kw">local</span> real = setmetatable\n' +
+      '<span class="kw">local</span> cache = {}\n\n' +
+      '<span class="kw">function</span> <span class="fn">setmetatable</span>(t, mt)\n' +
+      '    <span class="kw">local</span> wrapped = real(t, mt)\n' +
+      '    cache[wrapped] = mt\n' +
+      '    <span class="kw">return</span> wrapped\n' +
+      '<span class="kw">end</span>\n\n' +
+      '<span class="kw">function</span> <span class="fn">getrawmetatable</span>(value)\n' +
+      '    <span class="kw">return</span> cache[value]\n' +
+      '<span class="kw">end</span>\n\n' +
+      '<span class="kw">local</span> hidden = {}\n\n' +
+      '<span class="kw">function</span> <span class="fn">sethiddenproperty</span>(obj, name, value)\n' +
+      '    hidden[obj] = hidden[obj] <span class="kw">or</span> {}\n' +
+      '    hidden[obj][name] = value\n' +
+      '    <span class="kw">return</span> <span class="kw">true</span>\n' +
+      '<span class="kw">end</span>\n\n' +
+      '<span class="cm">-- every file in autoexec/ runs right after this, once per client</span>';
+  }
+</script>
+</body>
+</html>

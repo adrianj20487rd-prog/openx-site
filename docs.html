@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Documentation — openX</title>
+<meta name="description" content="Install, run, and troubleshoot openX.">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 1.6 21 6.8v10.4L12 22.4 3 17.2V6.8z" stroke="#80deea" stroke-width="1.5"/>
+        <path d="M8.4 8.6l7.2 6.8M15.6 8.6l-7.2 6.8" stroke="#80deea" stroke-width="1.9" stroke-linecap="round"/>
+      </svg>
+      openX <span class="v">v1.0</span>
+    </a>
+    <div class="nav-links">
+      <a href="index.html#overview">Overview</a>
+      <a href="index.html#ui">Interface</a>
+      <a href="index.html#runtime">Runtime</a>
+      <a href="docs.html">Docs</a>
+      <a href="index.html#faq">FAQ</a>
+    </div>
+    <a class="btn btn-primary btn-sm" href="index.html#download">Download</a>
+  </div>
+</nav>
+
+<div class="wrap doc">
+  <aside class="doc-nav">
+    <a href="#install">Install</a>
+    <a href="#first-run">First run</a>
+    <a href="#core">Loading a core</a>
+    <a href="#using">Using the editor</a>
+    <a href="#autoexec">Autoexec</a>
+    <a href="#files">Files</a>
+    <a href="#troubleshooting">Troubleshooting</a>
+    <a href="#build">Building</a>
+    <a href="#audit">Audit notes</a>
+  </aside>
+
+  <main class="doc-body">
+    <h1>Documentation</h1>
+    <p class="lead">openX is a host, not an executor. It gives the Capi / Xeno.dll ABI a real interface — the execution engine comes from the DLL you load.</p>
+
+    <h2 id="install">Install</h2>
+    <ol>
+      <li>Download <code>openX-1.0-win64.zip</code> and extract it anywhere.</li>
+      <li>Put your <code>Xeno.dll</code> next to <code>openX.host.exe</code>, or click the core chip in the sidebar after launch.</li>
+      <li>Double-click <code>openX.exe</code>.</li>
+    </ol>
+    <p>That's it. There's no installer and nothing is written to the registry.</p>
+
+    <div class="note">
+      <b>Which exe?</b> <code>openX.exe</code> is a native launcher. It checks for .NET Framework 4.7.2,
+      installs it from Microsoft if it's missing, then starts <code>openX.host.exe</code>. If you launch
+      the host directly on a machine without the framework, Windows will refuse to run it.
+    </div>
+
+    <h2 id="first-run">First run</h2>
+    <p>On a machine with .NET 4.7.2 already present (Windows 10 1809+ / Windows 11), the launcher
+    hands off immediately. Otherwise you'll see one prompt:</p>
+    <pre><span class="c">// openX - first run</span>
+openX needs .NET Framework 4.7.2, which is not installed.
+Download and install it now?
+About 84 MB from Microsoft. Windows will ask for permission,
+and a restart may be needed.</pre>
+    <p>The installer is fetched from Microsoft's own <code>go.microsoft.com</code> link, run with
+    <code>/q /norestart</code>, and deleted afterwards. Exit codes 0, 3010 and 1641 are treated as
+    success; 3010 offers to start the app anyway after telling you a reboot is recommended.</p>
+
+    <h2 id="core">Loading a core</h2>
+    <p>openX looks for <code>Xeno.dll</code> in this order:</p>
+    <ol>
+      <li>the path in <code>CorePath=</code> inside <code>config.ini</code></li>
+      <li><code>Xeno.dll</code> next to <code>openX.host.exe</code></li>
+      <li><code>bin\Xeno.dll</code> under the exe</li>
+    </ol>
+    <p>On load the host maps the DLL with <code>LOAD_WITH_ALTERED_SEARCH_PATH</code>, so its own
+    dependencies (<code>libcrypto-3-x64.dll</code>, <code>libssl-3-x64.dll</code>) resolve beside it
+    rather than in the app folder, then binds five exports:</p>
+    <table>
+      <tr><th>Export</th><th>Signature</th><th>Used for</th></tr>
+      <tr><td><code>Initialize</code></td><td><code>void()</code></td><td>called once on load</td></tr>
+      <tr><td><code>Attach</code></td><td><code>void()</code></td><td>injection</td></tr>
+      <tr><td><code>GetClients</code></td><td><code>ptr()</code></td><td>client list for the dropdown</td></tr>
+      <tr><td><code>Execute</code></td><td><code>void(byte*, char**, int)</code></td><td>running a script</td></tr>
+      <tr><td><code>Compilable</code></td><td><code>ptr(byte*)</code></td><td>syntax check</td></tr>
+    </table>
+    <p>If an export is missing you get the name of the missing export instead of a
+    <code>TypeInitializationException</code>. The SHA-256 of the mapped file is printed to the console
+    on every load and shortened on the core chip in the sidebar.</p>
+    <p>The chip is the only core UI: it shows <i>loaded</i>, <i>attached</i> or <i>not found</i>.
+    Click it to pick a DLL, or right-click for reload and unload. The chosen path is saved to
+    <code>config.ini</code>, so it only has to be done once.</p>
+
+    <h2 id="using">Using the editor</h2>
+    <p>Every open file gets its own tab at the top of the window. A dot on the tab means unsaved
+    changes; close the tab and openX asks before throwing them away. Right-click a tab for a list
+    of every open document, so tabs that have scrolled out of reach are still one click away.</p>
+    <table>
+      <tr><th>Action</th><th>Key</th></tr>
+      <tr><td>Execute current script</td><td><code>F5</code></td></tr>
+      <tr><td>Save</td><td><code>Ctrl+S</code></td></tr>
+      <tr><td>Save as</td><td><code>Ctrl+Shift+S</code></td></tr>
+      <tr><td>Open</td><td><code>Ctrl+O</code></td></tr>
+      <tr><td>New tab</td><td><code>Ctrl+N</code></td></tr>
+      <tr><td>Rename tab (and file)</td><td><code>F2</code> or double-click</td></tr>
+      <tr><td>Close tab</td><td><code>Ctrl+W</code></td></tr>
+      <tr><td>Cycle tabs</td><td><code>Ctrl+Tab</code> / <code>Ctrl+Shift+Tab</code></td></tr>
+      <tr><td>Clear console</td><td><code>Ctrl+L</code></td></tr>
+    </table>
+    <p>The sidebar lists <code>scripts/</code> and <code>autoexec/</code>. Click a file to open it
+    in a tab. <b>Attach</b> injects into the selected client and refreshes the client list. With
+    <i>auto-inject</i> enabled the host retries on a timer, so you can launch Roblox after openX.</p>
+    <p><b>setup.lua</b> runs once per client, before your first script, unless you untick the option.
+    It is a local file and opens like any other document — the original wrapper fetched it over the
+    network on every execution.</p>
+
+    <h2 id="autoexec">Autoexec</h2>
+    <p>Anything in <code>autoexec/</code> runs automatically after injection. The order is:</p>
+    <ol>
+      <li>attach to the client</li>
+      <li><code>scripts/setup.lua</code> — once per client</li>
+      <li>every <code>autoexec/*.lua</code>, in filename order — once per client</li>
+      <li>your script, when you press <b>F5</b></li>
+    </ol>
+    <p>The <i>run autoexec/ after inject</i> checkbox in the sidebar turns step 3 off. Files are
+    tracked per client, so a script is not re-run just because the client list refreshed. Subfolders
+    are not scanned; keep the files directly in <code>autoexec/</code>.</p>
+
+    <h2 id="files">Files</h2>
+    <pre>openX.exe              native launcher + .NET bootstrapper
+openX.host.exe         the app
+Xeno.dll               the core (you supply)
+config.ini             written on exit
+scripts/               *.lua and *.txt appear in the sidebar
+scripts/setup.lua      local API bootstrap
+scripts/examples/      sample script
+autoexec/              *.lua run once per client after injection</pre>
+
+    <h2 id="troubleshooting">Troubleshooting</h2>
+
+    <h3>core: missing</h3>
+    <p>The chip in the sidebar is amber and says <i>click to locate</i>. Click it and pick your
+    <code>Xeno.dll</code>; the path is saved. The console also prints the full path it tried.</p>
+
+    <h3>autoexec didn't run</h3>
+    <p>Check three things: the <i>run autoexec/ after inject</i> box is ticked, the files are
+    directly in <code>autoexec/</code> with a <code>.lua</code> extension, and the client was already
+    attached when you added them. Files run once per client — detach and attach to re-run.</p>
+
+    <h3>export not found: Name</h3>
+    <p>The DLL is loaded but doesn't export that symbol. Either it's a different ABI or the file is
+    not the core. Dump its exports with <code>dumpbin /exports Xeno.dll</code> before guessing.</p>
+
+    <h3>Attach does nothing</h3>
+    <p>Start Roblox first, then attach. If the client list stays empty, the core isn't finding the
+    process — that's inside the DLL, not the host.</p>
+
+    <h3>Check syntax crashes</h3>
+    <p>The host frees the pointer returned by <code>Compilable</code> with
+    <code>Marshal.FreeCoTaskMem</code>, mirroring the original wrapper. If the DLL allocated with
+    <code>malloc</code>, that free is wrong. Use F5 and read the console instead.</p>
+
+    <h3>loadstring is nil</h3>
+    <p>That comes from the core's Lua environment, not from openX. Confirm with
+    <code>print(type(loadstring))</code>. Nothing outside the DLL can add it.</p>
+
+    <h2 id="build">Building from source</h2>
+    <p>You need Windows with Visual Studio 2022, or MSBuild + NuGet.</p>
+    <pre><span class="c"># PowerShell, in the project root</span>
+.\build.ps1</pre>
+    <p>Or open <code>openX.sln</code>. Output lands in <code>src\openX\bin\Release\</code>.
+    The launcher builds from <code>launcher/openx_launcher.c</code> — plain C, no dependencies.
+    A prebuilt <code>openX.exe</code> is included, so you can skip that step.</p>
+
+    <h2 id="audit">Audit notes</h2>
+    <p>The original Capi package is a thin P/Invoke layer with a broken bootstrap. Every endpoint it
+    used is dead:</p>
+    <table>
+      <tr><th>Endpoint</th><th>Purpose</th><th>Status</th></tr>
+      <tr><td><code>cloudyExecutor/webb</code> release</td><td>core download</td><td>404</td></tr>
+      <tr><td><code>cxapi.version</code></td><td>update check</td><td>404</td></tr>
+      <tr><td><code>brod.cast</code></td><td>broadcast</td><td>404</td></tr>
+      <tr><td><code>cloudyweb.vercel.app/hash/setup.lua</code></td><td>remote code on every execute</td><td>404</td></tr>
+    </table>
+    <p>openX removes all four: no runtime download, no update check, no broadcast channel, and no
+    remote <code>loadstring</code> prefix on your scripts.</p>
+
+    <div class="note">
+      <b>Ban risk.</b> Script execution violates Roblox's Terms of Service. Testing on an account you
+      care about is a bad idea.
+    </div>
+  </main>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="legal" style="margin-top:0;border-top:0;padding-top:0">
+      <span>© 2026 openX. Not affiliated with Roblox or Xeno.</span>
+      <span><a href="index.html" style="color:var(--accent)">Back to overview</a></span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
