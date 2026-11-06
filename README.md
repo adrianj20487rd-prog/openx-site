@@ -3,6 +3,9 @@
 Static site for the openX Windows host. No build step, no framework, no
 JavaScript required to read it. Everything here is served as-is.
 
+**Live:** <https://adrianj20487rd-prog.github.io/openx-site/> (GitHub Pages,
+deployed from this folder's repository on every push to `main`).
+
 ## Preview / publish with a temporary URL
 
 ```bash
